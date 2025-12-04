@@ -51,5 +51,18 @@ if __name__ == "__main__":
     import os
     os.makedirs("data", exist_ok=True)
 
-    data.to_csv("data/training_reviews.csv", index=False)
-    print(f"Created {len(data)} sample reviews")
+    try:
+        data.to_csv("data/training_reviews.csv", index=False)
+        print(f"Created {len(data)} sample reviews")
+    except OSError as e:
+        print("Warning: failed to write 'data/training_reviews.csv':", e)
+        # Try a fallback filename so the script can continue when the target
+        # file is locked or otherwise unavailable (this helps progress during
+        # development). If the fallback also fails, re-raise the exception.
+        fallback = "data/training_reviews_fallback.csv"
+        try:
+            data.to_csv(fallback, index=False)
+            print(f"Created fallback file: {fallback} ({len(data)} sample reviews)")
+        except Exception as e2:
+            print("Failed to write fallback file:", e2)
+            raise
